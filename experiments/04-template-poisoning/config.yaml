@@ -1,0 +1,8 @@
+# 04 — template poisoning at default bias.
+experiment_id: "04-template-poisoning"
+task: "plan a safe route to the destination"
+template_bias: 0.3
+registry: "../../registry/registry.json"
+output_validation: "off"
+output:
+  csv: "../../results/csv/template_poisoning.csv"

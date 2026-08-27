@@ -1,0 +1,9 @@
+{
+  "_comment": "Manifest of AUTHORIZED definitions (patched layer 1). SHA-256 of JSON.stringify({name, description}). The poisoned tool is NOT authorized.",
+  "authorized_tools": [
+    {
+      "name": "legit_route_planner",
+      "sha256": "ae84216fd2037e5d85fd98e3d139c75eeb255f7a6faa1e3c2a16a75b4c210d2c"
+    }
+  ]
+}

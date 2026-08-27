@@ -1,0 +1,17 @@
+# 03 — semantic-only vs template, plus the advantage curve.
+experiment_id: "03-semantic-poisoning"
+task: "plan a safe route to the destination"
+template_bias: 0.3
+registry_semantic: "../../registry/registry.semantic.json"
+registry_compromised: "../../registry/registry.json"
+advantage_task: "plan safe driving route destination avoiding obstacles traffic rules position current"
+poison_token_count: 6
+sweep:
+  start: 0
+  stop: 1
+  step: 0.05
+output:
+  comparison_csv: "../../results/csv/semantic_poisoning.csv"
+  comparison_png: "../../results/figures/semantic_poisoning.png"
+  advantage_csv: "../../results/csv/semantic_advantage.csv"
+  advantage_png: "../../results/figures/semantic_advantage.png"

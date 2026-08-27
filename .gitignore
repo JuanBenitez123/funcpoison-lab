@@ -1,0 +1,43 @@
+# Node
+node_modules/
+npm-debug.log*
+dist/
+*.tsbuildinfo
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp
+.smoke.*
+_paper_extract.txt
+*.json.txt
+/match.txt
+/match2.txt
+/poisoned.txt
+
+# Editor / agent local state
+.claude/settings.local.json
+
+# Internal notes
+/HANDOFF.md
+/STUDY.md
+/PROJECT.md
+/PAPER.md
+/results/docker-smoke.md
+/results/llm/reasoning_traces.md
+/experiments/08-optional-llm-evaluation/PLAN.md
+
+# Third-party paper PDF (cite arXiv:2509.24408)
+/FuncPoison.pdf

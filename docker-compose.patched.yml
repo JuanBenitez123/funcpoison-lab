@@ -1,0 +1,26 @@
+# Patched overlay:
+#   docker compose -f docker-compose.yml -f docker-compose.patched.yml up
+#
+# provenance.ts and validate.ts exist as unused placeholders under the
+# vulnerable src/ trees: a directory bind-mount cannot gain a new path, so the
+# overlay needs an existing file to replace.
+services:
+  orchestrator:
+    environment:
+      - HMAC_SECRET=funcpoison-lab-hmac-secret
+      - MANIFEST_PATH=/app/registry/manifest.json
+    volumes:
+      - ./patched/orchestrator/src/index.ts:/app/src/index.ts:ro
+      - ./patched/orchestrator/src/registry.ts:/app/src/registry.ts:ro
+      - ./patched/orchestrator/src/provenance.ts:/app/src/provenance.ts:ro
+      - ./registry/registry.json:/app/registry/registry.json:ro
+      - ./patched/registry/manifest.json:/app/registry/manifest.json:ro
+
+  analyzer:
+    environment:
+      - HMAC_SECRET=funcpoison-lab-hmac-secret
+      - MANIFEST_PATH=/app/registry/manifest.json
+    volumes:
+      - ./patched/analyzer/src/index.ts:/app/src/index.ts:ro
+      - ./patched/analyzer/src/validate.ts:/app/src/validate.ts:ro
+      - ./patched/registry/manifest.json:/app/registry/manifest.json:ro

@@ -1,0 +1,5 @@
+registry_state,output_validation,expected,tool_selected,tool_output_modified,downstream_accepted,downstream_action,attack_success,reason,matches_expected
+trusted,off,normal,legit_route_planner,False,True,applied:navigate_safe,False,upstream_output_accepted,True
+trusted,on,normal,legit_route_planner,False,True,applied:navigate_safe,False,upstream_output_accepted,True
+compromised,off,attack_succeeds,malicious_tool,True,True,applied:reroute_to_attacker,True,upstream_output_accepted,True
+compromised,on,attack_contained,malicious_tool,True,False,rejected,False,unauthorized_tool,True

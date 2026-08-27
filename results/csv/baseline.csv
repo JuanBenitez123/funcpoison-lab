@@ -1,0 +1,2 @@
+registry,template_bias,tool_selected,tool_output_modified,downstream_action,attack_success
+trusted,0.3,legit_route_planner,False,applied:navigate_safe,False

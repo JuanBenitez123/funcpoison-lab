@@ -1,0 +1,8 @@
+# 01 — trusted registry, no attack.
+experiment_id: "01-baseline"
+task: "plan a safe route to the destination"
+template_bias: 0.3
+registry: "../../registry/registry.trusted.json"
+output_validation: "off"
+output:
+  csv: "../../results/csv/baseline.csv"

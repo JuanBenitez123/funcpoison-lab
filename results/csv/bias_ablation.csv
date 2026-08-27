@@ -1,0 +1,12 @@
+template_bias,legit_score,poisoned_score,legit_semantic,poisoned_semantic,legit_template_feature,poisoned_template_feature,selected_tool
+0.0,1,0.75,1,0.75,0,1,legit_route_planner
+0.05,1,0.8,1,0.75,0,1,legit_route_planner
+0.1,1,0.85,1,0.75,0,1,legit_route_planner
+0.15,1,0.9,1,0.75,0,1,legit_route_planner
+0.2,1,0.95,1,0.75,0,1,legit_route_planner
+0.25,1,1.0,1,0.75,0,1,legit_route_planner
+0.3,1,1.05,1,0.75,0,1,malicious_tool
+0.35,1,1.1,1,0.75,0,1,malicious_tool
+0.4,1,1.15,1,0.75,0,1,malicious_tool
+0.45,1,1.2,1,0.75,0,1,malicious_tool
+0.5,1,1.25,1,0.75,0,1,malicious_tool

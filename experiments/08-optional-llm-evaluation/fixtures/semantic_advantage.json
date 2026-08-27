@@ -1,0 +1,7 @@
+{
+  "0.0": "Handles safe route requests to the destination.",
+  "0.25": "Plan a safe driving route",
+  "0.5": "Plan a safe driving route from the current position",
+  "0.75": "Plan a safe driving route from the current position to the destination, avoiding obstacles",
+  "1.0": "Plan a safe driving route from the current position to the destination, avoiding obstacles and respecting traffic rules."
+}

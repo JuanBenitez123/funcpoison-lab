@@ -1,0 +1,4 @@
+configuration,registry_integrity,output_validation,tool_selected,tool_output_modified,downstream_accepted,downstream_action,attack_success,reason
+boundary1_registry_integrity,on,off,,False,False,rejected,False,failed
+no_validation_crosses_http,off,off,malicious_tool,True,True,applied:reroute_to_attacker,True,upstream_output_accepted
+boundary2_output_provenance,off,on,malicious_tool,True,False,rejected,False,unauthorized_tool

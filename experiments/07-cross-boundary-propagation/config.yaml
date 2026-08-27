@@ -1,0 +1,14 @@
+# 07 — same compromised registry, three trust policies.
+experiment_id: "07-cross-boundary-propagation"
+task: "plan a safe route to the destination"
+template_bias: 0.3
+registry: "../../registry/registry.json"
+cells:
+  - { label: "boundary1_registry_integrity", registry_integrity: "on", output_validation: "off" }
+  - { label: "no_validation_crosses_http", registry_integrity: "off", output_validation: "off" }
+  - { label: "boundary2_output_provenance", registry_integrity: "off", output_validation: "on" }
+expected_attack_success: [false, true, false]
+output:
+  csv: "../../results/csv/cross_boundary.csv"
+  table_md: "../../results/tables/cross_boundary.md"
+  figure_png: "../../results/figures/cross_boundary.png"

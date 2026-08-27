@@ -1,0 +1,73 @@
+# CI — unit tests + deterministic experiments, then Docker exploit/patched.
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Orchestrator unit tests
+        run: |
+          cd orchestrator
+          npm install
+          npm run typecheck
+          npm test
+      - name: Analyzer unit tests
+        run: |
+          cd analyzer
+          npm install
+          npm run typecheck
+          npm test
+      - name: Pytest + experiments
+        run: |
+          python -m pip install -r requirements.txt
+          python -m pytest tests -q
+          python experiments/run_all.py
+
+  docker-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python deps
+        run: python -m pip install -r requirements.txt
+      - name: Vulnerable stack
+        run: docker compose up --build -d --wait --wait-timeout 180
+      - name: Exploit must print [VULNERABLE]
+        run: |
+          set -euo pipefail
+          python exploit/run.py | tee vuln.out
+          grep -F '[VULNERABLE]' vuln.out
+      - name: HTTP integration (vulnerable)
+        env:
+          REQUIRE_HTTP: "1"
+        run: python -m pytest tests/test_http.py -q
+      - name: Tear down vulnerable stack
+        run: docker compose down --remove-orphans
+      - name: Patched overlay
+        run: docker compose -f docker-compose.yml -f docker-compose.patched.yml up --build -d --wait --wait-timeout 180
+      - name: Exploit must print [PATCHED]
+        run: |
+          set -euo pipefail
+          python exploit/run.py | tee patched.out
+          grep -F '[PATCHED]' patched.out
+      - name: HTTP integration (patched)
+        env:
+          REQUIRE_HTTP: "1"
+        run: python -m pytest tests/test_http.py -q
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.yml -f docker-compose.patched.yml down --remove-orphans

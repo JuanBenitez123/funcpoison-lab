@@ -1,0 +1,298 @@
+openapi: 3.0.3
+info:
+  title: Function Registry Poisoning Lab
+  version: 0.2.0
+  description: >
+    Inspectable HTTP contracts for the deterministic lab. Path names are the
+    same in vulnerable and patched mode; validation and status codes differ.
+    Paper ASR figures are not part of this API.
+servers:
+  - url: http://127.0.0.1:3000
+    description: Orchestrator
+  - url: http://127.0.0.1:3001
+    description: Analyzer
+paths:
+  /health:
+    get:
+      summary: Liveness
+      responses:
+        "200":
+          description: Service is up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+              examples:
+                orchestrator:
+                  value: { ok: true, service: orchestrator, mode: vulnerable }
+                analyzer:
+                  value: { ok: true, service: analyzer, mode: patched }
+  /score:
+    post:
+      summary: Rank tools without executing (orchestrator)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskRequest"
+      responses:
+        "200":
+          description: Ranking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScoreResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvalidInput"
+        "403":
+          description: Registry integrity failed (patched)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistryIntegrityFailed"
+  /tasks:
+    post:
+      summary: Select, execute, forward to analyzer (orchestrator)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskRequest"
+      responses:
+        "200":
+          description: Pipeline result (check attack_success)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvalidInput"
+        "403":
+          description: Registry integrity failed (patched)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegistryIntegrityFailedTask"
+        "500":
+          description: Tool execution failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExecutionFailed"
+        "502":
+          description: Analyzer unreachable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzerUnreachable"
+  /analyze:
+    post:
+      summary: Downstream decision (analyzer)
+      servers:
+        - url: http://127.0.0.1:3001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeRequest"
+      responses:
+        "200":
+          description: Trusted and applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeResponse"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvalidInput"
+        "403":
+          description: Provenance rejected (patched)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeRejected"
+
+components:
+  schemas:
+    Mode:
+      type: string
+      enum: [vulnerable, patched]
+    Health:
+      type: object
+      required: [ok, service, mode]
+      properties:
+        ok: { type: boolean }
+        service: { type: string, enum: [orchestrator, analyzer] }
+        mode: { $ref: "#/components/schemas/Mode" }
+    TaskRequest:
+      type: object
+      required: [task]
+      properties:
+        task: { type: string, minLength: 1 }
+        template_bias: { type: number }
+    ScoreRow:
+      type: object
+      required: [name, semantic_relevance, template_feature, score]
+      properties:
+        name: { type: string }
+        semantic_relevance: { type: number }
+        template_feature: { type: number, enum: [0, 1] }
+        score: { type: number }
+    ScoreResponse:
+      type: object
+      required: [task, template_bias, scores, selected_tool]
+      properties:
+        task: { type: string }
+        template_bias: { type: number }
+        scores:
+          type: array
+          items: { $ref: "#/components/schemas/ScoreRow" }
+        selected_tool:
+          type: string
+          nullable: true
+    ToolOutput:
+      type: object
+      required: [tool, action, destination, summary]
+      properties:
+        tool: { type: string }
+        action: { type: string, enum: [navigate_safe, reroute_to_attacker] }
+        destination: { type: string }
+        summary: { type: string }
+    AnalyzerDecision:
+      type: object
+      required: [trusted, downstream_action, attack_success, reason, selected_tool, mode]
+      properties:
+        trusted: { type: boolean }
+        downstream_action: { type: string }
+        attack_success: { type: boolean }
+        reason: { type: string }
+        selected_tool: { type: string }
+        mode: { $ref: "#/components/schemas/Mode" }
+    TaskResponse:
+      type: object
+      required:
+        - task
+        - template_bias
+        - selected_tool
+        - score
+        - semantic_relevance
+        - template_feature
+        - scores
+        - output
+        - analyzer_status
+        - analyzer
+        - attack_success
+        - metadata
+      properties:
+        task: { type: string }
+        template_bias: { type: number }
+        selected_tool: { type: string }
+        score: { type: number }
+        semantic_relevance: { type: number }
+        template_feature: { type: number }
+        scores:
+          type: array
+          items: { $ref: "#/components/schemas/ScoreRow" }
+        output: { $ref: "#/components/schemas/ToolOutput" }
+        analyzer_status: { type: integer }
+        analyzer: { $ref: "#/components/schemas/AnalyzerDecision" }
+        attack_success: { type: boolean }
+        metadata:
+          type: object
+          required: [mode]
+          properties:
+            mode: { $ref: "#/components/schemas/Mode" }
+            provenance:
+              type: object
+              nullable: true
+              properties:
+                hmac: { type: string }
+    InvalidInput:
+      type: object
+      required: [error, detail]
+      properties:
+        error: { type: string, enum: [invalid_input] }
+        detail: { type: string }
+    RejectedTool:
+      type: object
+      required: [name, reason]
+      properties:
+        name: { type: string }
+        reason: { type: string, enum: [unauthorized, modified] }
+    RegistryIntegrityFailed:
+      type: object
+      required: [error, rejected]
+      properties:
+        error: { type: string, enum: [registry_integrity_check_failed] }
+        rejected:
+          type: array
+          items: { $ref: "#/components/schemas/RejectedTool" }
+    RegistryIntegrityFailedTask:
+      allOf:
+        - $ref: "#/components/schemas/RegistryIntegrityFailed"
+        - type: object
+          required: [attack_success, attack_contained]
+          properties:
+            attack_success: { type: boolean, enum: [false] }
+            attack_contained: { type: boolean, enum: [true] }
+    ExecutionFailed:
+      type: object
+      required: [error, detail]
+      properties:
+        error: { type: string, enum: [execution_failed] }
+        detail: { type: string }
+    AnalyzerUnreachable:
+      type: object
+      required: [error, selected_tool, output]
+      properties:
+        error: { type: string, enum: [analyzer_unreachable] }
+        selected_tool: { type: string }
+        output: { $ref: "#/components/schemas/ToolOutput" }
+    AnalyzeRequest:
+      type: object
+      required: [selected_tool, output]
+      properties:
+        task: { type: string }
+        selected_tool: { type: string }
+        output:
+          type: object
+          required: [action]
+          properties:
+            action: { type: string }
+        provenance:
+          type: object
+          properties:
+            hmac: { type: string }
+    AnalyzeResponse:
+      allOf:
+        - $ref: "#/components/schemas/AnalyzerDecision"
+        - type: object
+          properties:
+            trusted: { type: boolean, enum: [true] }
+            reason: { type: string, enum: [upstream_output_accepted] }
+    AnalyzeRejected:
+      type: object
+      required: [trusted, downstream_action, attack_success, reason, selected_tool, mode]
+      properties:
+        trusted: { type: boolean, enum: [false] }
+        downstream_action: { type: string, enum: [rejected] }
+        attack_success: { type: boolean, enum: [false] }
+        reason:
+          type: string
+          enum: [missing_provenance, invalid_provenance, unauthorized_tool]
+        selected_tool: { type: string }
+        mode: { type: string, enum: [patched] }

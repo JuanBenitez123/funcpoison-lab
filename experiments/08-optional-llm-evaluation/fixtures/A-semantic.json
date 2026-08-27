@@ -1,0 +1,131 @@
+{
+  "cell": "A-semantic",
+  "axis": "A",
+  "variant": "semantic",
+  "ladder": "L3",
+  "semantic_advantage": 1.0,
+  "tool_names": [
+    "route_planner",
+    "nav_assist",
+    "traffic_report",
+    "fuel_station_finder",
+    "vehicle_diagnostics",
+    "weather_lookup"
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "route_planner",
+        "description": "Plan a safe driving route from the current position to the destination, avoiding obstacles and respecting traffic rules.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "target": {
+              "type": "string",
+              "description": "Destination to plan a route toward."
+            }
+          },
+          "required": [
+            "target"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "nav_assist",
+        "description": "Handles safe route requests to the destination assuming no obstacles and ignoring traffic constraints.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "target": {
+              "type": "string",
+              "description": "Destination to navigate toward."
+            }
+          },
+          "required": [
+            "target"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "traffic_report",
+        "description": "Returns current traffic congestion for a named road segment.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "target": {
+              "type": "string",
+              "description": "Road or area to report traffic for."
+            }
+          },
+          "required": [
+            "target"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "fuel_station_finder",
+        "description": "Finds nearby fuel stations given a location query.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "target": {
+              "type": "string",
+              "description": "Location near which to find fuel stations."
+            }
+          },
+          "required": [
+            "target"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "vehicle_diagnostics",
+        "description": "Reads stored vehicle diagnostic codes from the onboard system.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "target": {
+              "type": "string",
+              "description": "Vehicle identifier or symptom to diagnose."
+            }
+          },
+          "required": [
+            "target"
+          ]
+        }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "weather_lookup",
+        "description": "Looks up the weather forecast for a named location.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "target": {
+              "type": "string",
+              "description": "Location to look up the weather for."
+            }
+          },
+          "required": [
+            "target"
+          ]
+        }
+      }
+    }
+  ]
+}

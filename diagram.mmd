@@ -1,0 +1,21 @@
+%% Function Registry Poisoning Lab — architecture and trust boundaries
+%% Trust boundaries are labeled in text. Do not rely on color alone.
+flowchart TB
+    subgraph host["Host"]
+        reg[("registry.json<br/>(pre-poisoned fixture)")]
+    end
+
+    reg -. "bind mount<br/>Trust Boundary #1" .-> orch
+
+    subgraph orchestrator["ORCHESTRATOR :3000 (untrusted input)"]
+        orch["registry.ts + selector.ts<br/>score = semantic_relevance + template_bias * template_feature"]
+    end
+
+    orch -- "HTTP / JSON<br/>Trust Boundary #2" --> anlz
+
+    subgraph analyzer["ANALYZER :3001"]
+        anlz["downstream decision<br/>(vulnerable: trust; patched: validate provenance)"]
+    end
+
+    classDef untrusted stroke-dasharray: 5 5;
+    class reg,orch untrusted;

@@ -1,0 +1,27 @@
+{
+  "experiment_id": "08-optional-llm-evaluation",
+  "legitimate": "route_planner",
+  "poisoned": "nav_assist",
+  "distractors": [
+    "traffic_report",
+    "fuel_station_finder",
+    "vehicle_diagnostics",
+    "weather_lookup"
+  ],
+  "cells": [
+    "A-bland",
+    "A-semantic",
+    "A-template",
+    "A-trusted",
+    "B-L0",
+    "B-L1",
+    "B-L2",
+    "B-L3",
+    "C-0.00",
+    "C-0.25",
+    "C-0.50",
+    "C-0.75",
+    "C-1.00"
+  ],
+  "note": "Canonical (unpermuted) tool definitions generated from config.yaml."
+}
