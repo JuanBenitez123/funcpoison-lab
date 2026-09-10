@@ -1,4 +1,8 @@
-# Function Registry Poisoning Lab
+# FuncPoison·Lab
+
+An experimental study of tool poisoning, tool selection, and trust boundaries in agentic systems.
+
+**[Interactive Research →](https://funcpoison.dev)** · **[LinkedIn →](https://www.linkedin.com/in/juan-pablo-benitez-gastaldi-753138352/)**
 
 A small, inspectable lab about a specific failure: **an agent picks its tools by
 reading text, so whoever controls that text controls the agent.**

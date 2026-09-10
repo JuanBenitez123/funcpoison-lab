@@ -11,7 +11,7 @@ Llama used "the destination", Sonnet "the airport", Haiku "JFK Airport" (the
 underspecified noun made Haiku ask *which* airport and return `no_tool_call`).
 The task class is the same; the destination token is not.
 
-## The three findings
+## The four findings
 
 1. **Form beats meaning.** A description that merely *claims* to do routing
    barely moves selection. The same description wrapped in invocation
@@ -24,6 +24,13 @@ The task class is the same; the destination token is not.
    Haiku's poisoned rate climbs 0.06 → 0.65 from first slot to last — **+59
    points** — with a Cochran-Armitage z of 13.12 over n=1020. The source paper
    does not control for this. §3.
+
+4. **The attack is invisible from outside.** Sonnet flags the payload in
+   its reasoning channel 329 times and tells the user 19 of those times.
+   Haiku and Llama emit no reasoning channel at all on this route, and
+   when Haiku calls the poisoned tool and speaks, 55 of 58 trials read as
+   the legitimate action. Resistance and compromise look the same from
+   the surface. Section 4.
 
 ## 1. Rates by axis
 
@@ -182,7 +189,70 @@ Figures: `results/llm/figures/claude-haiku-4.5_position.png` and
 plus `{model}_{variants,ladder,advantage,arms}.png` (rebuilt by
 `run.py --mode figures`). Raw jsonl: `results/llm/raw/`.
 
-## 4. Limits
+## 4. Where the attack is observable
+
+Sections 1–3 measure whether the poisoned tool is *selected*. This one measures
+something else: whether anyone watching the system could tell. Every number
+below comes from one script:
+
+```bash
+python experiments/08-optional-llm-evaluation/observability.py
+```
+
+"Flagged" is a lexical test — the trial's text matches an injection-naming
+regex pinned in that script. It is a proxy for the model *naming* the payload,
+not a claim about what it computed internally, and the counts move if you widen
+the pattern.
+
+### The reasoning channel is the only place the attack is named
+
+| | trials | reasoning channel | visible text |
+|---|---:|---:|---:|
+| Sonnet 5 | 1080 | 999 | 189 |
+| Haiku 4.5 | 1080 | 0 | 203 |
+| Llama 3.1 8B | 1080 | 0 | 1080 |
+
+No reasoning channel was requested: `client.py` sends no thinking or reasoning
+parameter. Sonnet's route returned one unasked; the other two never did, so on
+this route there is nothing to log for them. Llama's "visible text" is the
+serialised tool call, not prose.
+
+Sonnet flags the payload in reasoning in **329** trials and in user-visible text
+in **19** — 5.8% of them. The other 310 are neutralised silently.
+
+### The defensive prompt moved observability, not selection
+
+On the five cells present in both arms, 300 trials each:
+
+| arm | flagged in reasoning | disclosed to user |
+|---|---:|---:|
+| neutral | 81 (27%) | **0** |
+| defensive | 159 (53%) | **19** |
+
+Fisher on detection, neutral vs. defensive: **p = 1.05e-10**. That is the only
+defensive-arm difference in this experiment that passes a test at all — none of
+the selection-rate differences in §1 do, and the one cell that crosses 0.05
+(Llama `C-0.00`, p = 0.043) does not survive correction for ten comparisons.
+
+### Detection is not containment
+
+One trial flagged the payload in reasoning and called `nav_assist` anyway. One
+of 329 is not a rate, but it settles the direction: the reasoning channel is an
+observable signal, not a guarantee about what executed.
+
+### The surface is indistinguishable
+
+Of the 58 Haiku trials that called `nav_assist` **and** produced text, 55
+describe the legitimate action — "I'll plan a safe driving route to JFK Airport
+for you" — the same sentence it produces when it calls `route_planner`. Three
+mention navigation. From the visible output there is no reliable signal that
+execution went somewhere else.
+
+So there are two distinct observability failures, not one: Sonnet's signal
+exists and stays in a channel the user never sees; Haiku produces no such
+channel and its surface reads clean either way.
+
+## 5. Limits
 
 These rates are this harness, these models, this run date. They are **not**
 comparable to the paper's reported 86% / 98% / 18%, nor to any deterministic CSV
@@ -202,3 +272,6 @@ in `results/csv/` — the deterministic selector is an abstraction with a
 - Sonnet 5 was sent no `temperature` (provider default). Llama and Haiku ran
   at the configured 0.7. OpenRouter's Anthropic first-party Sonnet route does
   not advertise the parameter; sending 0.7 with `require_parameters: true` 404s.
+- The reasoning channel is not an audit surface. It was returned unasked
+  here; a provider may summarise it, truncate it, or not expose it, so its
+  presence in this run is no guarantee it is available in another.
